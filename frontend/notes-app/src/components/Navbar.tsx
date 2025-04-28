@@ -1,16 +1,35 @@
 import React, { useState } from "react";
 import ProfileInfo from "./Cards/ProfileInfo";
 import SearchBar from "./SearchBar/SearchBar";
+import { useNavigate } from "react-router-dom"; 
 
-const Navbar: React.FC = () => {
+interface NavbarProps {
+  userInfo: any; // Replace 'any' with the appropriate type for userInfo
+  onSearchNote: (query: string) => void; // Add the onSearchNote property
+  handleClearSearch: () => void; // Add the handleClearSearch property
+}
+
+const Navbar: React.FC<NavbarProps> = ({ userInfo, onSearchNote, handleClearSearch }) => {
   const [searchQuery, setSearchQuery] = useState("");
 
+  const navigate = useNavigate(); 
+
   const handleSearch = () => {
-    // Implement search functionality here
+    if (searchQuery.trim() !== "") {
+      onSearchNote(searchQuery); 
+    } else {
+      onSearchNote(""); 
+    }
   };
 
   const onClearSearch = () => {
     setSearchQuery("");
+    handleClearSearch();
+  };
+
+  const onLogout = () => {
+    localStorage.clear();
+    navigate("/login"); 
   };
 
   return (
@@ -24,7 +43,7 @@ const Navbar: React.FC = () => {
         onClearSearch={onClearSearch}
       />
 
-      <ProfileInfo /> {/* No props needed here */}
+      <ProfileInfo userInfo={userInfo} onLogout={onLogout} /> {/* No props needed here */}
     </div>
   );
 };

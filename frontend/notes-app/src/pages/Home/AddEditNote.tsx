@@ -1,17 +1,21 @@
 import { useState, useEffect } from "react";
 import TagsInput from "../../components/Inputs/TagsInput";
 import { MdClose } from "react-icons/md";
+import axiosInstance from "../../utils/axiosInstance";
+import axios from "axios";
 
 interface AddEditNoteProps {
-  noteData?: { title: string; content: string; tags: string[] } | null;  // Allowing null
+  noteData?: { _id?: string; title: string; content: string; tags: string[] } | null;  // Allowing null
   type?: string;
   onClose: () => void;
+  getAllNotes: () => void; // Added getAllNotes
+  showToastMessage: (message: string, type: "success" | "delete") => void; // Added showToastMessage
 }
 
-const AddEditNote = ({ noteData, type, onClose }: AddEditNoteProps) => {
-  const [title, setTitle] = useState<string>("");
-  const [content, setContent] = useState<string>("");
-  const [tags, setTags] = useState<string[]>([]);
+const AddEditNote = ({ noteData, type, getAllNotes, onClose, showToastMessage }: AddEditNoteProps) => {
+  const [title, setTitle] = useState<string>(noteData?.title || "");
+  const [content, setContent] = useState<string>(noteData?.content || "");
+  const [tags, setTags] = useState<string[]>(noteData?.tags || []);
   const [error, setError] = useState<string>("");
 
   // Populate fields if it's an edit operation
@@ -23,14 +27,54 @@ const AddEditNote = ({ noteData, type, onClose }: AddEditNoteProps) => {
     }
   }, [type, noteData]);
 
-  const AddNewNote = () => {
+  const AddNewNote = async () => {
     // Logic to add a new note
-    console.log("Adding new note:", { title, content, tags });
+   try {
+    const response = await axiosInstance.post("/add-note", {
+      title,
+      content,
+      tags,
+    });
+    if (response.data && response.data.note) {
+      showToastMessage("Note Added Successfully", "success"); // Show success message
+      getAllNotes(); // Call getAllNotes after successfully adding a note
+      onClose(); // Close the modal after adding the note
+    }
+    
+   } catch (error) {
+      // Handle error response
+      if (axios.isAxiosError(error) && error.response && error.response.data && error.response.data.message) {
+        setError(error.response.data.message);
+      }
+    }
   };
 
-  const EditNote = () => {
+  const EditNote = async () => {
     // Logic to edit the existing note
-    console.log("Editing note:", { title, content, tags });
+    const noteId = noteData?._id; // Get the note ID from the noteData prop
+    if (!noteId) {
+      setError("Note ID is missing");
+      return;
+    }
+    try {
+      const response = await axiosInstance.put("/edit-note/"+noteId, {
+        title,
+        content,
+        tags,
+      });
+      if(response.data && response.data.note) 
+        {
+      showToastMessage("Note Updated Successfully", "success"); // Show success message
+      getAllNotes(); // Call getAllNotes after successfully adding a note
+      onClose(); // Close the modal after adding the note
+        }
+
+     } catch (error) {
+        // Handle error response
+        if (axios.isAxiosError(error) && error.response && error.response.data && error.response.data.message) {
+          setError(error.response.data.message);
+        }
+      }
   };
 
   const handleAddNote = () => {
@@ -100,7 +144,7 @@ const AddEditNote = ({ noteData, type, onClose }: AddEditNoteProps) => {
         className="flex justify-center items-center font-medium mt-5 p-3 w-full max-w-xs mx-auto bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 transition duration-300"
         onClick={handleAddNote}
       >
-        ADD
+        {type === "edit" ? "UPDATE" : "ADD"}
       </button>
     </div>
   );

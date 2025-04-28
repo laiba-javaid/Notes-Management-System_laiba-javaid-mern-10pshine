@@ -1,3 +1,4 @@
+import moment from 'moment';
 import { MdOutlinePushPin, MdCreate, MdDelete } from 'react-icons/md';
 
 const NoteCard = ({
@@ -27,7 +28,7 @@ const NoteCard = ({
           {/* Bold Title */}
           <h6 className="text-lg font-bold">{title}</h6>
           {/* Date */}
-          <span className="text-xs text-slate-500">{date}</span>
+          <span className="text-xs text-slate-500">{moment(date).format("DD-MMM-YYYY")}</span>
         </div>
         {/* Pin Icon */}
         <MdOutlinePushPin
@@ -38,6 +39,13 @@ const NoteCard = ({
 
       {/* Content */}
       <p className="text-sm text-slate-700 mb-2 pt-3">{content.slice(0, 60)}</p>
+
+      {/* Tags */}
+      <div className="mt-4 text-xs text-slate-400">
+      {tags.map((item, index) => (
+    <span key={index} className="text-blue-500 mr-1">#{item}</span>
+  ))}
+      </div>
 
       {/* Edit and Delete Icons */}
       <div className="flex items-center justify-end gap-4 mt-4">
@@ -51,10 +59,7 @@ const NoteCard = ({
         />
       </div>
 
-      {/* Tags */}
-      <div className="mt-4 text-xs text-slate-400">
-        {tags.length > 0 ? tags.join(", ") : "No tags available"}
-      </div>
+      
     </div>
   );
 };

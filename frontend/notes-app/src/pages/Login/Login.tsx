@@ -1,16 +1,20 @@
-import { Link } from "react-router-dom";
-import Navbar from "../../components/Navbar";
+import { Link, useNavigate } from "react-router-dom";
 import { FaEnvelope } from "react-icons/fa";
 import PasswordInput from "../../components/Inputs/PasswordInput";
 import { useState } from "react";
 import validEmail from "../../utils/helper";
+import axios from "axios";
+
+import axiosInstance from "../../utils/axiosInstance"; // Adjust the path as needed
 
 const Login: React.FC = () => {
   const [email, setEmail] = useState<string>("");
   const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
-  const HandleLogin = (e: React.FormEvent) => {
+  const navigate = useNavigate(); // Initialize the navigate function
+
+  const HandleLogin = async (e: React.FormEvent) => {
     e.preventDefault(); // Prevent page reload
 
     // If there's already an error, don't reset it unless the specific field is corrected
@@ -30,13 +34,31 @@ const Login: React.FC = () => {
 
     setError(null); // Clear error if everything is valid
 
-    // Call the login API
-    console.log("Logging in with:", { email, password });
+  // Call the login API
+    try{
+      const response = await axiosInstance.post("/login", {
+        email: email,
+        password: password,
+      });
+      // Handle successful login response
+      if(response.data && response.data.accessToken) {
+        localStorage.setItem("token", response.data.accessToken);
+        // Redirect to the dashboard or home page
+        navigate("/dashboard");
+      }
+    } catch (error) {
+      // Handle error response
+      if (axios.isAxiosError(error) && error.response && error.response.data && error.response.data.message) {
+        setError(error.response.data.message);
+      } else {
+        setError("An error occurred. Please try again.");
+      }
+    }
   };
 
   return (
     <>
-      <Navbar />
+      
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
         <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
           <h2 className="text-3xl font-semibold text-center text-gray-700 mb-6">

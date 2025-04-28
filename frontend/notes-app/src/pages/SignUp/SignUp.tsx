@@ -1,9 +1,10 @@
-import { Link } from "react-router-dom";
-import Navbar from "../../components/Navbar";
+import { Link, useNavigate } from "react-router-dom";
 import { FaEnvelope, FaUser } from "react-icons/fa";
 import PasswordInput from "../../components/Inputs/PasswordInput";
 import { useState } from "react";
 import validEmail from "../../utils/helper";
+import axiosInstance from "../../utils/axiosInstance";
+import axios from "axios";
 
 const Signup: React.FC = () => {
   const [name, setName] = useState<string>("");
@@ -11,39 +12,67 @@ const Signup: React.FC = () => {
   const [password, setPassword] = useState<string>("");
   const [error, setError] = useState<string | null>(null);
 
-  const HandleSignup = (e: React.FormEvent) => {
+  const navigate = useNavigate();
+
+  const HandleSignup = async (e: React.FormEvent) => {
     e.preventDefault(); // Prevent page reload
 
-    if (!error || error === "Name is required") {
-      if (!name.trim()) {
-        setError("Name is required");
-        return;
-      }
+    if(!name)
+    {
+      setError("Name is required");
+      return;
     }
 
-    if (!error || error === "Please enter a valid email address") {
-      if (!validEmail(email)) {
-        setError("Please enter a valid email address");
-        return;
-      }
+    if(!validEmail(email)) {
+      setError("Please enter a valid email address");
+      return;
     }
 
-    if (!error || error === "Password is required") {
-      if (!password) {
-        setError("Password is required");
-        return;
-      }
+   if(!password) {
+      setError("Password is required");
+      return;
     }
 
     setError(null); // Clear error if everything is valid
 
-    // Call the signup API
-    console.log("Signing up with:", { name, email, password });
+    // Call the Signup API
+    try{
+      const response = await axiosInstance.post("/create-account", {
+        fullName: name,
+        email: email,
+        password: password,
+      });
+
+       // Handle successful registration response
+      const data = response.data;
+      console.log("Server response:", data);
+      // If server sends error as string
+      if (typeof data?.error === "string") {
+        setError(data.error);
+        return;
+      }
+
+      // If server sends accessToken
+      if (typeof data?.accessToken === "string") {
+        localStorage.setItem("token", data.accessToken);
+        navigate("/dashboard");
+        return;
+      }
+
+    // ❗ If none of the above (something weird)
+    setError("Unexpected response from server. Please try again.");
+  } catch (error) {
+    if (axios.isAxiosError(error) && typeof error.response?.data?.message === "string") {
+      setError(error.response.data.message);
+    } else {
+      setError("An error occurred. Please try again.");
+    }
+  }
   };
 
   return (
     <>
-      <Navbar />
+     
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
         <div className="w-full max-w-md p-8 bg-white rounded-lg shadow-lg">
           <h2 className="text-3xl font-semibold text-center text-gray-700 mb-6">
@@ -67,7 +96,7 @@ const Signup: React.FC = () => {
                   }}
                   placeholder="Enter your name"
                   className="w-full bg-transparent outline-none ml-2 text-gray-700"
-                  required
+                  
                 />
               </div>
             </div>
@@ -88,7 +117,7 @@ const Signup: React.FC = () => {
                   }}
                   placeholder="Enter your email"
                   className="w-full bg-transparent outline-none ml-2 text-gray-700"
-                  required
+                  
                 />
               </div>
             </div>
