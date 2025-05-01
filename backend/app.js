@@ -15,6 +15,8 @@ const {authenticateToken}=require("./utilities");
 const app = express();
 const bcrypt = require('bcrypt');
 
+const authRoutes = require('./routes/auth.routes');
+
 
 app.use(
   cors({
@@ -29,105 +31,107 @@ app.get('/', (req, res) => {
   res.json({ message: 'Welcome to the backend!' });
 })
 
+// Routes
+app.use('/api/auth', authRoutes);
 
 //Backend Ready!!!
 
 //Create Account
-app.post('/create-account', async (req, res) => {
-  const { email, password, fullName } = req.body;
+// app.post('/create-account', async (req, res) => {
+//   const { email, password, fullName } = req.body;
 
-  if (!email) {
-    return res.status(400).json({ message: 'Email is required' });
-  }
-  if (!password) {
-    return res.status(400).json({ message: 'Password is required' });
-  }
-  if (!fullName) {
-    return res.status(400).json({ message: 'Full Name is required' });
-  }
+//   if (!email) {
+//     return res.status(400).json({ message: 'Email is required' });
+//   }
+//   if (!password) {
+//     return res.status(400).json({ message: 'Password is required' });
+//   }
+//   if (!fullName) {
+//     return res.status(400).json({ message: 'Full Name is required' });
+//   }
 
-  const isUser = await User.findOne({ email: email });
-  if (isUser) {
-    return res.status(400).json({ 
-      error: true,  
-      message: 'User already exists' 
-    });
-  }
+//   const isUser = await User.findOne({ email: email });
+//   if (isUser) {
+//     return res.status(400).json({ 
+//       error: true,  
+//       message: 'User already exists' 
+//     });
+//   }
 
-  // Hash the password
-  const hashedPassword = await bcrypt.hash(password, 10);
+//   // Hash the password
+//   const hashedPassword = await bcrypt.hash(password, 10);
 
-  const userInfo = new User({
-    fullName: fullName,
-    password: hashedPassword,
-    email: email,
-  });
+//   const userInfo = new User({
+//     fullName: fullName,
+//     password: hashedPassword,
+//     email: email,
+//   });
 
-  await userInfo.save();
+//   await userInfo.save();
 
-  const accessToken = jwt.sign(
-    { userId: userInfo._id },
-    process.env.ACCESS_TOKEN_SECRET,
-    { expiresIn: '3600m' }
-  );
+//   const accessToken = jwt.sign(
+//     { userId: userInfo._id },
+//     process.env.ACCESS_TOKEN_SECRET,
+//     { expiresIn: '3600m' }
+//   );
 
-  return res.status(201).json({ 
-    error: false,  // ✅ Boolean
-    userInfo,
-    accessToken,
-    message: 'Registration Successful',
-  });
-});
+//   return res.status(201).json({ 
+//     error: false,  // ✅ Boolean
+//     userInfo,
+//     accessToken,
+//     message: 'Registration Successful',
+//   });
+// });
 
-//Login
-app.post('/login', async (req, res) => {
-  const { email, password } = req.body;
+// //Login
+// app.post('/login', async (req, res) => {
+//   const { email, password } = req.body;
 
-  if (!email) {
-    return res.status(400).json({ message: 'Email is required' });
-  }
-  if (!password) {
-    return res.status(400).json({ message: 'Password is required' });
-  }
+//   if (!email) {
+//     return res.status(400).json({ message: 'Email is required' });
+//   }
+//   if (!password) {
+//     return res.status(400).json({ message: 'Password is required' });
+//   }
 
-  try {
-    // Find user
-    const user = await User.findOne({ email: email });
-    if (!user) {
-      return res.status(400).json({
-        error: 'true',
-        message: 'User not found',
-      });
-    }
+//   try {
+//     // Find user
+//     const user = await User.findOne({ email: email });
+//     if (!user) {
+//       return res.status(400).json({
+//         error: 'true',
+//         message: 'User not found',
+//       });
+//     }
 
-    // Compare password
-    const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(400).json({
-        error: 'true',
-        message: 'Invalid Credentials',
-      });
-    }
+//     // Compare password
+//     const isMatch = await bcrypt.compare(password, user.password);
+//     if (!isMatch) {
+//       return res.status(400).json({
+//         error: 'true',
+//         message: 'Invalid Credentials',
+//       });
+//     }
 
-    // If password matches, generate token
-    const accessToken = jwt.sign(
-      { userId: user._id },
-      process.env.ACCESS_TOKEN_SECRET,
-      { expiresIn: '3600m' }
-    );
+//     // If password matches, generate token
+//     const accessToken = jwt.sign(
+//       { userId: user._id },
+//       process.env.ACCESS_TOKEN_SECRET,
+//       { expiresIn: '3600m' }
+//     );
 
-    return res.json({
-      error: 'false',
-      user: user,
-      accessToken,
-      message: 'Login Successful',
-    });
+//     return res.json({
+//       error: 'false',
+//       user: user,
+//       accessToken,
+//       message: 'Login Successful',
+//     });
 
-  } catch (error) {
-    console.error(error);
-    return res.status(500).json({ error: 'true', message: 'Server Error' });
-  }
-});
+//   } catch (error) {
+//     console.error(error);
+//     return res.status(500).json({ error: 'true', message: 'Server Error' });
+//   }
+// });
 
 //Get User Info
 app.get('/get-user', authenticateToken, async (req, res) => {

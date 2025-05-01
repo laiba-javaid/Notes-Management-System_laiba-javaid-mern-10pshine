@@ -23,19 +23,13 @@ const PasswordInput: React.FC<PasswordInputProps> = ({ value, onChange, placehol
         placeholder={placeholder || "Password"}
         className="w-full text-sm bg-transparent py-3 mr-3 rounded outline-none"
       />
-      {isShowPassword ? (
-        <FaRegEye
-          size={22}
-          className="text-primary cursor-pointer"
-          onClick={toggleShowPassword}
-        />
-      ) : (
-        <FaRegEyeSlash
-          size={22}
-          className="text-slate-400 cursor-pointer"
-          onClick={toggleShowPassword}
-        />
-      )}
+      <button type="button" onClick={toggleShowPassword} role="button" data-testid="toggle-password">
+        {isShowPassword ? (
+            <FaRegEye size={22} className="text-primary cursor-pointer" />) 
+            : 
+            (<FaRegEyeSlash size={22} className="text-slate-400 cursor-pointer" />
+        )}
+      </button>
     </div>
   );
 };

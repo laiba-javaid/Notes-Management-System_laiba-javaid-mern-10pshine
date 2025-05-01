@@ -25,13 +25,12 @@ const NoteCard = ({
       {/* Title and Pin Icon Section */}
       <div className="flex items-center justify-between mb-2">
         <div>
-          {/* Bold Title */}
           <h6 className="text-lg font-bold">{title}</h6>
-          {/* Date */}
           <span className="text-xs text-slate-500">{moment(date).format("DD-MMM-YYYY")}</span>
         </div>
-        {/* Pin Icon */}
         <MdOutlinePushPin
+          data-testid="pin-icon"
+          aria-label="pin note"
           className={`cursor-pointer ${isPinned ? 'text-blue-500' : 'text-gray-500'} hover:text-blue-700`}
           onClick={onPinNote}
         />
@@ -42,24 +41,24 @@ const NoteCard = ({
 
       {/* Tags */}
       <div className="mt-4 text-xs text-slate-400">
-      {tags.map((item, index) => (
-    <span key={index} className="text-blue-500 mr-1">#{item}</span>
-  ))}
+        {tags.map((item, index) => (
+          <span key={index} className="text-blue-500 mr-1">#{item}</span>
+        ))}
       </div>
 
       {/* Edit and Delete Icons */}
       <div className="flex items-center justify-end gap-4 mt-4">
         <MdCreate
+          aria-label="edit"
           className="cursor-pointer text-gray-500 hover:text-green-600"
           onClick={onEdit}
         />
         <MdDelete
+          aria-label="delete"
           className="cursor-pointer text-gray-500 hover:text-red-500"
           onClick={onDelete}
         />
-      </div>
-
-      
+      </div> 
     </div>
   );
 };

@@ -76,14 +76,20 @@ const Login: React.FC = () => {
                   value={email}
                   onChange={(e) => {
                     setEmail(e.target.value);
-                    if (error === "Please enter a valid email address" && validEmail(e.target.value)) {
+                      if (error === "Please enter a valid email address" && validEmail(e.target.value)) {
                       setError(null);
-                    }
-                  }}
-                  placeholder="Enter your email"
-                  className="w-full bg-transparent outline-none ml-2 text-gray-700"
-                  required
-                />
+                     }
+                       }}
+                      onBlur={() => {
+                      if (!validEmail(email)) {
+                    setError("Please enter a valid email address");
+    }
+  }}
+  placeholder="Enter your email"
+  className="w-full bg-transparent outline-none ml-2 text-gray-700"
+  required
+/>
+
               </div>
             </div>
 
