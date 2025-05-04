@@ -1,15 +1,16 @@
 import { useState, useEffect } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import TagsInput from "../../components/Inputs/TagsInput";
-import { MdClose } from "react-icons/md";
+import { MdClose, MdTitle, MdNotes, MdLocalOffer } from "react-icons/md";
 import axiosInstance from "../../utils/axiosInstance";
 import axios from "axios";
 
 interface AddEditNoteProps {
-  noteData?: { _id?: string; title: string; content: string; tags: string[] } | null;  // Allowing null
+  noteData?: { _id?: string; title: string; content: string; tags: string[] } | null;
   type?: string;
   onClose: () => void;
-  getAllNotes: () => void; // Added getAllNotes
-  showToastMessage: (message: string, type: "success" | "delete") => void; // Added showToastMessage
+  getAllNotes: () => void;
+  showToastMessage: (message: string, type: "success" | "delete" | "error") => void;
 }
 
 const AddEditNote = ({ noteData, type, getAllNotes, onClose, showToastMessage }: AddEditNoteProps) => {
@@ -17,6 +18,42 @@ const AddEditNote = ({ noteData, type, getAllNotes, onClose, showToastMessage }:
   const [content, setContent] = useState<string>(noteData?.content || "");
   const [tags, setTags] = useState<string[]>(noteData?.tags || []);
   const [error, setError] = useState<string>("");
+  const [isLoading, setIsLoading] = useState<boolean>(false);
+
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0, scale: 0.95 },
+    visible: { 
+      opacity: 1, 
+      scale: 1,
+      transition: { 
+        duration: 0.3,
+        ease: "easeOut"
+      }
+    },
+    exit: { 
+      opacity: 0, 
+      scale: 0.95, 
+      transition: { 
+        duration: 0.2, 
+        ease: "easeIn" 
+      } 
+    }
+  };
+
+  const buttonVariants = {
+    hover: { 
+      scale: 1.03,
+      boxShadow: "0px 6px 15px rgba(59, 130, 246, 0.4)",
+      transition: { 
+        duration: 0.2,
+        ease: "easeInOut"
+      } 
+    },
+    tap: { 
+      scale: 0.97
+    }
+  };
 
   // Populate fields if it's an edit operation
   useEffect(() => {
@@ -28,53 +65,57 @@ const AddEditNote = ({ noteData, type, getAllNotes, onClose, showToastMessage }:
   }, [type, noteData]);
 
   const AddNewNote = async () => {
-    // Logic to add a new note
-   try {
-    const response = await axiosInstance.post("/add-note", {
-      title,
-      content,
-      tags,
-    });
-    if (response.data && response.data.note) {
-      showToastMessage("Note Added Successfully", "success"); // Show success message
-      getAllNotes(); // Call getAllNotes after successfully adding a note
-      onClose(); // Close the modal after adding the note
-    }
-    
-   } catch (error) {
-      // Handle error response
-      if (axios.isAxiosError(error) && error.response && error.response.data && error.response.data.message) {
-        setError(error.response.data.message);
+    setIsLoading(true);
+    try {
+      const response = await axiosInstance.post("/add-note", {
+        title,
+        content,
+        tags,
+      });
+      if (response.data && response.data.note) {
+        showToastMessage("Note Added Successfully", "success");
+        getAllNotes();
+        onClose();
       }
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.data?.message) {
+        setError(error.response.data.message);
+      } else {
+        setError("Failed to add note. Please try again.");
+      }
+      setIsLoading(false);
     }
   };
 
   const EditNote = async () => {
-    // Logic to edit the existing note
-    const noteId = noteData?._id; // Get the note ID from the noteData prop
+    setIsLoading(true);
+    const noteId = noteData?._id;
     if (!noteId) {
       setError("Note ID is missing");
+      setIsLoading(false);
       return;
     }
+    
     try {
       const response = await axiosInstance.put("/edit-note/"+noteId, {
         title,
         content,
         tags,
       });
-      if(response.data && response.data.note) 
-        {
-      showToastMessage("Note Updated Successfully", "success"); // Show success message
-      getAllNotes(); // Call getAllNotes after successfully adding a note
-      onClose(); // Close the modal after adding the note
-        }
-
-     } catch (error) {
-        // Handle error response
-        if (axios.isAxiosError(error) && error.response && error.response.data && error.response.data.message) {
-          setError(error.response.data.message);
-        }
+      
+      if(response.data && response.data.note) {
+        showToastMessage("Note Updated Successfully", "success");
+        getAllNotes();
+        onClose();
       }
+    } catch (error) {
+      if (axios.isAxiosError(error) && error.response?.data?.message) {
+        setError(error.response.data.message);
+      } else {
+        setError("Failed to update note. Please try again.");
+      }
+      setIsLoading(false);
+    }
   };
 
   const handleAddNote = () => {
@@ -99,54 +140,128 @@ const AddEditNote = ({ noteData, type, getAllNotes, onClose, showToastMessage }:
   };
 
   return (
-    <div className="relative">
-      <button
+    <motion.div 
+      className="relative"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+      exit="exit"
+    >
+      <motion.button
         onClick={onClose}
-        className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-400 absolute top-3 right-3"
+        className="w-10 h-10 rounded-full flex items-center justify-center bg-gray-100 hover:bg-gray-200 text-gray-500 absolute top-2 right-2 z-10"
+        whileHover={{ scale: 1.1, backgroundColor: "#f3f4f6" }}
+        whileTap={{ scale: 0.9 }}
+        transition={{ duration: 0.2 }}
       >
         <MdClose className="text-xl" />
-      </button>
+      </motion.button>
+      
+      <div className="mb-8">
+        <h2 className="text-2xl font-bold text-indigo-900">
+          {type === "edit" ? "Edit Note" : "Create New Note"}
+        </h2>
+        <div className="h-1 w-16 bg-gradient-to-r from-indigo-600 to-purple-600 mt-2 rounded-full"></div>
+      </div>
+      
       {/* Title Field */}
-      <div className="flex flex-col gap-2">
-        <label className="input-label">TITLE</label>
+      <motion.div 
+        className="flex flex-col gap-2 mb-6"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.1 }}
+      >
+        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+          <MdTitle className="text-indigo-600" />
+          TITLE
+        </label>
         <input
           type="text"
-          className="text-2xl text-slate-950 outline-none"
-          placeholder="Go To Gym At 5"
+          className="text-xl text-slate-950 outline-none border border-gray-200 rounded-lg p-3 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all duration-200"
+          placeholder="Enter note title..."
           value={title}
-          onChange={(e) => setTitle(e.target.value)}
+          onChange={(e) => {
+            setTitle(e.target.value);
+            if (error === "Please enter the title") {
+              setError("");
+            }
+          }}
         />
-      </div>
+      </motion.div>
 
       {/* Content Field */}
-      <div className="flex flex-col gap-2 mt-4">
-        <label className="input-label">CONTENT</label>
+      <motion.div 
+        className="flex flex-col gap-2 mb-6"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+          <MdNotes className="text-indigo-600" />
+          CONTENT
+        </label>
         <textarea
-          className="text-sm text-slate-950 outline-none bg-slate-50 p-2 rounded"
-          placeholder="Content"
+          className="text-base text-slate-950 outline-none bg-gray-50 border border-gray-200 p-3 rounded-lg min-h-[200px] focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 transition-all duration-200"
+          placeholder="Write your note content here..."
           rows={10}
           value={content}
-          onChange={(e) => setContent(e.target.value)}
+          onChange={(e) => {
+            setContent(e.target.value);
+            if (error === "Please enter the content") {
+              setError("");
+            }
+          }}
         />
-      </div>
+      </motion.div>
 
       {/* Tags Field */}
-      <div className="mt-3">
-        <label className="input-label">TAGS</label>
+      <motion.div 
+        className="mb-6"
+        initial={{ opacity: 0, y: 10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.3 }}
+      >
+        <label className="flex items-center gap-2 text-sm font-medium text-gray-700 mb-2">
+          <MdLocalOffer className="text-indigo-600" />
+          TAGS
+        </label>
         <TagsInput tags={tags} setTags={setTags} />
-      </div>
+      </motion.div>
 
       {/* Error Message */}
-      {error && <p className="text-red-500 text-sm mt-2">{error}</p>}
+      <AnimatePresence>
+        {error && (
+          <motion.div 
+            className="text-red-500 text-sm mb-6 px-4 py-3 bg-red-50 rounded-lg border border-red-100"
+            initial={{ opacity: 0, y: -10, height: 0 }}
+            animate={{ opacity: 1, y: 0, height: "auto" }}
+            exit={{ opacity: 0, y: -10, height: 0 }}
+            transition={{ duration: 0.3 }}
+          >
+            {error}
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Add Button */}
-      <button
-        className="flex justify-center items-center font-medium mt-5 p-3 w-full max-w-xs mx-auto bg-blue-500 text-white rounded-lg shadow-md hover:bg-blue-600 transition duration-300"
+      {/* Add/Update Button */}
+      <motion.button
+        className="flex justify-center items-center font-medium p-4 w-full bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-lg shadow-md hover:shadow-lg transition duration-300 disabled:opacity-70"
         onClick={handleAddNote}
+        variants={buttonVariants}
+        whileHover="hover"
+        whileTap="tap"
+        disabled={isLoading}
       >
-        {type === "edit" ? "UPDATE" : "ADD"}
-      </button>
-    </div>
+        {isLoading ? (
+          <div className="flex items-center justify-center">
+            <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+            <span>{type === "edit" ? "UPDATING..." : "ADDING..."}</span>
+          </div>
+        ) : (
+          <span>{type === "edit" ? "UPDATE NOTE" : "ADD NOTE"}</span>
+        )}
+      </motion.button>
+    </motion.div>
   );
 };
 
