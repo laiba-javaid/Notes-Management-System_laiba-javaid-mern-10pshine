@@ -1,0 +1,6 @@
+projectKey=notekeeper
+serverUrl=http://localhost:9000
+serverVersion=25.4.0.105899
+dashboardUrl=http://localhost:9000/dashboard?id=notekeeper
+ceTaskId=a80b550d-3000-4085-aea7-c30d9fb58bab
+ceTaskUrl=http://localhost:9000/api/ce/task?id=a80b550d-3000-4085-aea7-c30d9fb58bab

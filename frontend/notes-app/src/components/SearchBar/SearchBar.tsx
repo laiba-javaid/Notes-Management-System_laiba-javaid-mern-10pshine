@@ -18,15 +18,21 @@ const SearchBar: React.FC<{
         onChange={onChange}
       />
       {value && (
-        <IoMdClose
+        <button
+          aria-label="Clear"
           className="text-xl text-slate-500 cursor-pointer hover:text-black"
           onClick={onClearSearch}
-        />
+        >
+          <IoMdClose />
+        </button>
       )}
-      <FaMagnifyingGlass
+      <button
+        aria-label="Search"
         className="text-slate-400 cursor-pointer hover:text-black"
         onClick={handleSearch}
-      />
+      >
+        <FaMagnifyingGlass />
+      </button>
     </div>
   );
 };
