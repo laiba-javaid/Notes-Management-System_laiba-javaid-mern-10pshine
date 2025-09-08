@@ -19,7 +19,7 @@ The app allows users to **create, update, delete, search, and pin/unpin notes**,
 
 ## 🖥️ Demo
 
-🎥 Project Walkthrough Video: [Watch Here](#)
+🎥 Project Walkthrough Video (Google Drive): [Watch Here](https://drive.google.com/file/d/1ViZJk-RWUWArjGjCdvsdjCyiWPrhlJR-/view?usp=sharing)
 
 ---
 
