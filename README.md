@@ -17,8 +17,6 @@ The app allows users to **create, update, delete, search, and pin/unpin notes**,
 
 ---
 
----
-
 ## 🖥️ Demo
 
 🎥 Project Walkthrough Video: [Watch Here](#)
@@ -47,33 +45,38 @@ The app allows users to **create, update, delete, search, and pin/unpin notes**,
 ---
 
 ## 📂 Project Structure
-
-```
-
-masters-branch/
-│── frontend/
-│   └── notes-app/     # React + TailwindCSS + TypeScript
-│
-│── backend/           # Node.js + Express.js + MongoDB
-│   ├── models/        # MongoDB schemas
+````
+NotesManagementSystem/
+├── backend/
+│   ├── models/                 # MongoDB schemas
 │   ├── services/              # Business logic
 │   │   ├── auth.service.js    # Authentication services
 │   │   └── note.service.js    # Note management services
-│   ├── routes/        # API routes
-│   ├── controllers/   # Request handlers
-│   └── tests/         # Unit tests
-│
+│   ├── tests/                 # Unit tests
+│   ├── node_modules/          # Dependencies
+│   ├── app.js                 # Express app configuration
+│   ├── config.json           # Database configuration
+│   ├── index.js              # Server entry point
+│   ├── package.json          # Backend dependencies
+│   ├── package-lock.json
+│   └── utilities.js          # Helper functions
+├── frontend/
+│   └── notes-app/            # React frontend
+│       ├── public/           # Static assets
+│       ├── src/              # Source code
+│       ├── vite.config.ts    # Vite configuration
+│       ├── constants.tsx     # App constants
+│       └── package.json      # Frontend dependencies
+├── .gitignore
 └── README.md
-
 ````
-
 ---
 
 ## ⚡ Getting Started
 
 ### 1️⃣ Clone the Repository
 ```bash
-git clone <(https://github.com/laiba-javaid/laiba-javaid-mern-10pshine)>
+git clone https://github.com/laiba-javaid/laiba-javaid-mern-10pshine.git
 cd masters-branch
 ````
 
